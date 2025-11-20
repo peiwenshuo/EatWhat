@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { startOfDay, endOfDay, subDays } from 'date-fns'
 
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     // 按类型统计
     const typeStats = records.reduce((acc, r) => {
-      const type = r.type || '其他'
+      const type = r.exerciseType || '其他'
       if (!acc[type]) {
         acc[type] = { count: 0, duration: 0, calories: 0 }
       }
@@ -81,53 +81,30 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { date, type, exercises, duration, caloriesBurned, intensity, notes } = body
+    const { date, exerciseType, exerciseName, duration, distance, sets, reps, weight, caloriesBurned, notes, imageUrl } = body
 
-    if (!type || !exercises) {
-      return NextResponse.json({ error: '训练类型和内容不能为空' }, { status: 400 })
+    if (!exerciseType || !exerciseName) {
+      return NextResponse.json({ error: '训练类型和名称不能为空' }, { status: 400 })
     }
 
-    // 检查当天是否已有相同类型的记录
+    // 创建新记录
     const recordDate = date ? new Date(date) : new Date()
-    const existingRecord = await prisma.workoutLog.findFirst({
-      where: {
+    const record = await prisma.workoutLog.create({
+      data: {
         userId: session.user.id,
-        type,
-        date: {
-          gte: startOfDay(recordDate),
-          lte: endOfDay(recordDate)
-        }
+        date: recordDate,
+        exerciseType,
+        exerciseName,
+        duration: duration || null,
+        distance: distance || null,
+        sets: sets || null,
+        reps: reps || null,
+        weight: weight || null,
+        caloriesBurned: caloriesBurned || null,
+        notes: notes || null,
+        imageUrl: imageUrl || null
       }
     })
-
-    let record
-    if (existingRecord) {
-      // 更新现有记录
-      record = await prisma.workoutLog.update({
-        where: { id: existingRecord.id },
-        data: {
-          exercises,
-          duration: duration || null,
-          caloriesBurned: caloriesBurned || null,
-          intensity: intensity || null,
-          notes: notes || null
-        }
-      })
-    } else {
-      // 创建新记录
-      record = await prisma.workoutLog.create({
-        data: {
-          userId: session.user.id,
-          date: recordDate,
-          type,
-          exercises,
-          duration: duration || null,
-          caloriesBurned: caloriesBurned || null,
-          intensity: intensity || null,
-          notes: notes || null
-        }
-      })
-    }
 
     return NextResponse.json({
       success: true,

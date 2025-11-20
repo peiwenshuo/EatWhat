@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/prisma'
 import { startOfDay, endOfDay, subDays } from 'date-fns'
 
@@ -89,14 +89,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { date, mealType, foods, calories, protein, carbs, fat, notes } = body
+    const { date, mealType, foodName, portion, calories, protein, carbs, fat, notes } = body
 
-    if (!mealType || !foods) {
+    if (!mealType || !foodName) {
       return NextResponse.json({ error: '餐次和食物不能为空' }, { status: 400 })
     }
 
     // 检查当天是否已有相同餐次的记录
     const recordDate = date ? new Date(date) : new Date()
+    const recordTime = new Date()
+
     const existingRecord = await prisma.foodLog.findFirst({
       where: {
         userId: session.user.id,
@@ -114,8 +116,9 @@ export async function POST(request: NextRequest) {
       record = await prisma.foodLog.update({
         where: { id: existingRecord.id },
         data: {
-          foods,
-          calories: calories || null,
+          foodName,
+          portion: portion || '1份',
+          calories: calories || 0,
           protein: protein || null,
           carbs: carbs || null,
           fat: fat || null,
@@ -128,9 +131,11 @@ export async function POST(request: NextRequest) {
         data: {
           userId: session.user.id,
           date: recordDate,
+          time: recordTime,
           mealType,
-          foods,
-          calories: calories || null,
+          foodName,
+          portion: portion || '1份',
+          calories: calories || 0,
           protein: protein || null,
           carbs: carbs || null,
           fat: fat || null,

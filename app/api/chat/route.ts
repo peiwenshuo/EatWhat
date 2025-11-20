@@ -41,14 +41,22 @@ export async function POST(request: Request) {
       await prisma.conversation.create({
         data: {
           userId,
-          messages: [...messages, { role: 'assistant', content: aiMessage }]
+          messages: {
+            create: [
+              ...messages.map((msg: any) => ({
+                role: msg.role,
+                content: msg.content
+              })),
+              { role: 'assistant', content: aiMessage }
+            ]
+          }
         }
       })
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: aiMessage 
+    return NextResponse.json({
+      success: true,
+      message: aiMessage
     })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })

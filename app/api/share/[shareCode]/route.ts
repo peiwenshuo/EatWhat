@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { shareCode: string } }
+  { params }: { params: Promise<{ shareCode: string }> }
 ) {
   try {
-    const { shareCode } = params
+    const { shareCode } = await params
 
     if (!shareCode) {
       return NextResponse.json({ error: '缺少分享码' }, { status: 400 })

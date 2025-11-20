@@ -1,11 +1,9 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { prisma } from './prisma'
+import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
 export const authOptions: NextAuthOptions = {
-  // 注意: Credentials Provider 不能与 Adapter 一起使用
-  // adapter: PrismaAdapter(prisma) as any,
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -15,10 +13,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials): Promise<any> {
         try {
-          console.log('authorize 开始', credentials?.email)
-
           if (!credentials?.email || !credentials?.password) {
-            console.log('缺少邮箱或密码')
             return null
           }
 
@@ -26,10 +21,7 @@ export const authOptions: NextAuthOptions = {
             where: { email: credentials.email }
           })
 
-          console.log('查询用户结果:', user ? '找到用户' : '未找到用户')
-
           if (!user || !user.password) {
-            console.log('用户不存在或没有密码')
             return null
           }
 
@@ -38,20 +30,18 @@ export const authOptions: NextAuthOptions = {
             user.password
           )
 
-          console.log('密码验证结果:', isPasswordValid)
-
           if (!isPasswordValid) {
             return null
           }
 
           return {
             id: user.id,
-            email: user.email,
+            email: user.email!,
             name: user.name,
             image: user.avatar || undefined,
           }
         } catch (error) {
-          console.error('authorize 错误:', error)
+          console.error('Auth error:', error)
           return null
         }
       }
@@ -63,7 +53,6 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/auth/signin',
   },
-  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -72,11 +61,11 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      if (session.user) {
+      if (token && session.user) {
         session.user.id = token.id as string
       }
       return session
     }
   },
-  debug: process.env.NODE_ENV === 'development',
+  secret: process.env.NEXTAUTH_SECRET,
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "大裴与珊珊吃什么？",
@@ -13,9 +14,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
       <body>
         <Providers>
+          <Header />
           {children}
         </Providers>
       </body>

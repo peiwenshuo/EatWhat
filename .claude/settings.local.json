@@ -24,7 +24,9 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(npm run build:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(node -e:*)",
+      "Bash(npx prisma generate:*)"
     ],
     "deny": [],
     "ask": []

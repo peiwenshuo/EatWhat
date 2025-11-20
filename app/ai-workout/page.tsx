@@ -38,11 +38,48 @@ export default function AIWorkoutPage() {
   const [shareContent, setShareContent] = useState<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // 添加错误监控
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('[AI Workout Page] 全局错误:', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error,
+        userAgent: navigator.userAgent
+      })
+    }
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('[AI Workout Page] 未处理的 Promise 拒绝:', {
+        reason: event.reason,
+        userAgent: navigator.userAgent
+      })
+    }
+
+    window.addEventListener('error', handleError)
+    window.addEventListener('unhandledrejection', handleUnhandledRejection)
+
+    console.log('[AI Workout Page] 页面已加载', {
+      userAgent: navigator.userAgent,
+      viewport: { width: window.innerWidth, height: window.innerHeight }
+    })
+
+    return () => {
+      window.removeEventListener('error', handleError)
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection)
+    }
+  }, [])
+
   useEffect(() => {
     if (status === 'unauthenticated') {
+      console.log('[AI Workout Page] 未认证，重定向到登录页')
       router.push('/auth/signin')
+    } else if (status === 'authenticated') {
+      console.log('[AI Workout Page] 用户已认证:', session?.user?.email)
     }
-  }, [status, router])
+  }, [status, router, session])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -344,10 +381,10 @@ export default function AIWorkoutPage() {
       </div>
 
       {/* 输入区域 */}
-      <div className="bg-white border-t px-4 py-4">
+      <div className="bg-card border-t border-border px-4 py-4">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
           {saveMessage && (
-            <div className="mb-3 text-sm text-center text-green-600 font-medium">
+            <div className="mb-3 text-sm text-center text-green-600 dark:text-green-400 font-medium">
               {saveMessage}
             </div>
           )}
@@ -358,7 +395,7 @@ export default function AIWorkoutPage() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="输入你的训练问题，比如'今天练什么？'"
               disabled={loading}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              className="flex-1 px-4 py-3 bg-background border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <Button
               type="submit"
@@ -368,7 +405,7 @@ export default function AIWorkoutPage() {
               {loading ? '发送中...' : '发送'}
             </Button>
           </div>
-          <p className="text-xs text-gray-500 mt-2 text-center">
+          <p className="text-xs text-muted-foreground mt-2 text-center">
             基于你的个人资料，AI 会给出更精准的训练建议
           </p>
         </form>

@@ -6,6 +6,17 @@ import { Header } from "@/components/Header";
 export const metadata: Metadata = {
   title: "大裴与珊珊吃什么？",
   description: "智能饮食计划和健身追踪应用",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: "大裴与珊珊吃什么？",
+  },
 };
 
 export default function RootLayout({

@@ -26,7 +26,8 @@
       "Bash(npm run build:*)",
       "Bash(git push)",
       "Bash(node -e:*)",
-      "Bash(npx prisma generate:*)"
+      "Bash(npx prisma generate:*)",
+      "Bash(test -f:*)"
     ],
     "deny": [],
     "ask": []

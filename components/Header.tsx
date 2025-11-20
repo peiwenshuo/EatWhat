@@ -25,9 +25,9 @@ export function Header() {
   const { data: session } = useSession()
   const router = useRouter()
   const pathname = usePathname()
-  const { theme, setTheme } = useTheme()
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const { theme, setTheme } = useTheme()
 
   // 不在登录页和主页显示 Header
   if (pathname === '/' || pathname?.startsWith('/auth/')) {

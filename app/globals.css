@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+
+
+@layer base {
+  :root {
+    /* Apple-inspired color palette - Light Mode */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    /* Apple Blue - Primary color */
+    --primary: 211 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Subtle gray backgrounds */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 220 13% 95%;
+    --muted-foreground: 0 0% 45%;
+
+    /* Apple Blue tint for accents */
+    --accent: 211 100% 96%;
+    --accent-foreground: 211 100% 40%;
+
+    /* Apple Red for destructive actions */
+    --destructive: 0 100% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Refined borders and inputs */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 211 100% 50%;
+
+    /* Health & Fitness themed chart colors */
+    --chart-1: 211 100% 50%;  /* Apple Blue */
+    --chart-2: 142 76% 36%;   /* Green (health) */
+    --chart-3: 27 96% 61%;    /* Orange (energy) */
+    --chart-4: 262 83% 58%;   /* Purple (activity) */
+    --chart-5: 346 87% 61%;   /* Pink (heart rate) */
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Apple-inspired color palette - Dark Mode */
+    --background: 0 0% 7%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Apple Blue - adjusted for dark mode */
+    --primary: 211 100% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Dark gray backgrounds */
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    /* Accent colors for dark mode */
+    --accent: 211 50% 20%;
+    --accent-foreground: 211 100% 70%;
+
+    /* Apple Red for dark mode */
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders for dark mode */
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 211 100% 60%;
+
+    /* Chart colors optimized for dark mode */
+    --chart-1: 211 100% 60%;
+    --chart-2: 142 70% 45%;
+    --chart-3: 27 96% 65%;
+    --chart-4: 262 80% 65%;
+    --chart-5: 346 85% 65%;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Smooth transitions for all interactive elements */
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  /* Smooth opacity transitions */
+  [data-state="open"],
+  [data-state="closed"] {
+    @apply transition-opacity duration-200 ease-in-out;
+  }
+}

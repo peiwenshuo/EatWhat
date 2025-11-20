@@ -1,0 +1,498 @@
+// Couple Fitness App - Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User Model
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String?
+  name          String
+  avatar        String?
+
+  // Partner Relationship
+  partnerId     String?  @unique
+  partner       User?    @relation("Partners", fields: [partnerId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  partnerOf     User?    @relation("Partners")
+
+  // Body Data
+  height        Int?
+  weight        Float?
+  age           Int?
+  gender        String?
+
+  // Fitness Goals
+  goal          String?
+  activityLevel String?
+  tdee          Int?
+  targetCalories Int?
+
+  // Diet Preferences
+  dietType      String?
+  allergies     String[]
+  dislikes      String[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  mealPlans     MealPlan[]
+  recipes       Recipe[]
+  foodLogs      FoodLog[]
+  workoutLogs   WorkoutLog[]
+  pantryItems   PantryItem[]
+  shoppingLists ShoppingList[]
+  messages      Message[]
+  reactions     Reaction[]
+  bodyRecords   BodyRecord[]
+  cookingLogs   CookingLog[]
+  conversations Conversation[]
+  recipeRatings RecipeRating[]
+  savedDietPlans SavedDietPlan[]
+  fitnessGoals FitnessGoal[]
+  reminders Reminder[]
+
+  @@index([email])
+  @@index([partnerId])
+}
+
+// Recipe Model
+model Recipe {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  imageUrl      String?
+
+  cookingTime   Int
+  difficulty    String
+  servings      Int
+
+  calories      Int
+  protein       Float
+  carbs         Float
+  fat           Float
+
+  ingredients   Json
+  steps         Json
+  tags          String[]
+
+  source        String
+  isPublic      Boolean  @default(false)
+
+  cookedCount   Int      @default(0)
+  avgRating     Float?
+
+  authorId      String
+  author        User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  ratings       RecipeRating[]
+  meals         Meal[]
+  cookingLogs   CookingLog[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([source, isPublic])
+}
+
+// Recipe Rating Model
+model RecipeRating {
+  id        String   @id @default(cuid())
+  recipeId  String
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  score     Int
+  comment   String?
+  notes     String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([recipeId, userId])
+}
+
+// Meal Plan Model
+model MealPlan {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  weekStart DateTime
+  weekEnd   DateTime
+
+  meals     Meal[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, weekStart])
+  @@index([userId, weekStart])
+}
+
+// Meal Model
+model Meal {
+  id        String   @id @default(cuid())
+  planId    String
+  plan      MealPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  date      DateTime
+  mealType  String
+
+  recipeId  String?
+  recipe    Recipe?  @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+
+  dishName  String?
+  calories  Int?
+  protein   Float?
+  carbs     Float?
+  fat       Float?
+
+  notes     String?
+
+  createdAt DateTime @default(now())
+
+  @@index([planId, date])
+}
+
+// Food Log Model
+model FoodLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date      DateTime
+  time      DateTime
+  mealType  String
+
+  foodName  String
+  portion   String
+
+  calories  Int
+  protein   Float?
+  carbs     Float?
+  fat       Float?
+
+  imageUrl  String?
+  notes     String?
+
+  reactions Reaction[]
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+// Reaction Model
+model Reaction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  targetType String
+  targetId   String
+
+  foodLog   FoodLog? @relation(fields: [targetId], references: [id], onDelete: Cascade)
+
+  type      String
+  content   String?
+
+  createdAt DateTime @default(now())
+}
+
+// Workout Log Model
+model WorkoutLog {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date          DateTime
+  exerciseType  String
+  exerciseName  String
+
+  duration      Int?
+  distance      Float?
+  sets          Int?
+  reps          Int?
+  weight        Float?
+
+  caloriesBurned Int?
+
+  notes         String?
+  imageUrl      String?
+
+  createdAt     DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+// Body Record Model
+model BodyRecord {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date        DateTime
+  weight      Float
+  bodyFat     Float?
+  muscle      Float?
+
+  chest       Float?
+  waist       Float?
+  hips        Float?
+  arms        Float?
+  thighs      Float?
+
+  imageUrl    String?
+  notes       String?
+
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+// Pantry Item Model
+model PantryItem {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  quantity    String
+  unit        String
+  category    String
+  location    String?
+
+  expiryDate  DateTime?
+  isExpired   Boolean   @default(false)
+
+  addedAt     DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, category])
+}
+
+// Shopping List Model
+model ShoppingList {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  weekStart DateTime
+  weekEnd   DateTime
+
+  items     ShoppingItem[]
+  totalCost Float?
+
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([userId, weekStart])
+  @@index([userId, weekStart])
+}
+
+// Shopping Item Model
+model ShoppingItem {
+  id       String        @id @default(cuid())
+  listId   String
+  list     ShoppingList  @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  name     String
+  quantity String
+  unit     String
+  category String
+
+  checked  Boolean       @default(false)
+  cost     Float?
+
+  addedAt  DateTime      @default(now())
+}
+
+// Message Model
+model Message {
+  id        String   @id @default(cuid())
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  content   String
+  type      String
+  metadata  Json?
+
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([senderId, createdAt])
+}
+
+// Cooking Log Model
+model CookingLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+
+  recipeId  String
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  imageUrl  String?
+  rating    Int?
+  comment   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+// Couple Goal Model
+model CoupleGoal {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  targetDate  DateTime
+
+  user1Id     String
+  user1Target Float
+  user1Progress Float  @default(0)
+
+  user2Id     String
+  user2Target Float
+  user2Progress Float  @default(0)
+
+  status      String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Conversation Model (AI Chat History)
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title     String   @default("未命名对话")
+
+  messages  ConversationMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+// Conversation Message Model
+model ConversationMessage {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role           String
+  content        String
+
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+// Saved Diet Plan Model (AI Generated)
+model SavedDietPlan {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content   String
+  source    String   @default("ai")
+  date      DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+// Share Model (分享功能)
+model Share {
+  id          String   @id @default(cuid())
+  shareCode   String   @unique // 唯一的分享码
+
+  userId      String   // 创建分享的用户
+  userName    String   // 分享者名称
+
+  type        String   // 分享类型: diet_plan, workout_log, body_record, food_log
+  title       String   // 分享标题
+  content     String   // 分享内容（JSON格式）
+
+  viewCount   Int      @default(0) // 查看次数
+  isPublic    Boolean  @default(true) // 是否公开
+  expiresAt   DateTime? // 过期时间（可选）
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([shareCode])
+  @@index([userId, createdAt])
+  @@index([type, isPublic])
+}
+
+// Fitness Goal Model (健身目标)
+model FitnessGoal {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        String   // 目标类型: weight_loss, muscle_gain, body_shape, endurance, strength
+  title       String   // 目标标题
+  description String?  // 目标描述
+
+  targetValue Float    // 目标值（如体重目标、体脂目标等）
+  currentValue Float?  // 当前值
+  unit        String   // 单位（kg, %, 次, 分钟等）
+
+  startDate   DateTime // 开始日期
+  targetDate  DateTime // 目标完成日期
+  completedAt DateTime? // 实际完成日期
+
+  status      String   @default("active") // 状态: active, completed, paused, abandoned
+  progress    Float    @default(0) // 进度百分比 (0-100)
+
+  milestones  Json?    // 里程碑数据（JSON格式）
+  notes       String?  // 备注
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([targetDate])
+}
+
+// Reminder Model (提醒设置)
+model Reminder {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        String   // 提醒类型: weight, workout, food, water, sleep
+  title       String   // 提醒标题
+  message     String?  // 提醒内容
+
+  time        String   // 提醒时间 (HH:mm 格式)
+  frequency   String   // 频率: daily, weekly, weekdays, weekends
+  daysOfWeek  String[] // 星期几（0-6，0=周日）
+
+  enabled     Boolean  @default(true) // 是否启用
+  lastSentAt  DateTime? // 上次发送时间
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, enabled])
+  @@index([type, enabled])
+}

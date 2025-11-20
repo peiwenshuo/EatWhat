@@ -31,7 +31,12 @@ export default function SignInPage() {
 
       if (result?.error) {
         console.error('登录错误:', result.error)
-        setError(result.error)
+        // 显示更友好的错误提示
+        if (result.error === 'CredentialsSignin') {
+          setError('邮箱或密码错误，请检查后重试')
+        } else {
+          setError(result.error)
+        }
       } else if (result?.ok) {
         console.log('登录成功，跳转到 dashboard')
         router.push('/dashboard')
